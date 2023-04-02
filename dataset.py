@@ -13,8 +13,8 @@ class MyDataset(torch.utils.data.Dataset):
         for txt_path in txt_paths:
             with open(txt_path, 'r') as f:
                 content = f.read()
-                train_content += content[:int(9*len(content)/10)] 
-                eval_content += content[int(9*len(content)/10):]
+                train_content += content[:int(99*len(content)/100)] 
+                eval_content += content[int(99*len(content)/100):]
         tokenizer = AutoTokenizer.from_pretrained('bert-base-chinese')
         context_length = 128
         split_content = train_content if split == "train" else eval_content

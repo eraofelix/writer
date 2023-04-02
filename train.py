@@ -33,7 +33,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
-for epoch in tqdm(range(10)):
+for epoch in tqdm(range(100)):
     for batch in tqdm(train_dataloader, total=len(train_dataloader)):
         input_ids = batch[0].to(device)
         attention_mask = batch[1].to(device)
@@ -45,3 +45,18 @@ for epoch in tqdm(range(10)):
         optimizer.step()
         optimizer.zero_grad()
         print(f" Epoch {epoch} loss: {loss.item()}") 
+
+    model.eval()
+    eval_loss = 0
+    for batch in tqdm(eval_dataloader):
+        input_ids = batch[0].to(device)
+        attention_mask = batch[1].to(device)
+        labels = input_ids.clone().detach()
+        labels[labels == tokenizer.pad_token_id] = -100
+        with torch.no_grad():
+            outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+            eval_loss += outputs[0].mean().item()
+    eval_loss /= len(eval_dataloader)
+    print(f" Epoch {epoch} eval_loss: {eval_loss}")
+    model.train()
+    torch.save(model.state_dict(), f"checkpoint_epoch_{epoch}.pt")
